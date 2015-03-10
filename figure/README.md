@@ -1,0 +1,1 @@
+## This folder contains bitmap images produced for Peer Assessment 1 project
