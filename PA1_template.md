@@ -4,6 +4,8 @@ output:
   html_document:
     keep_md: true
 ---
+
+## Reproducible Research: Peer Assessment 1
 Dataset used in this report contains measurements from a personal activity monitoring device. This device collects data at 5 minute intervals through out the day. The data consists of two months of data from an anonymous individual collected during the months of October and November, 2012 and include the number of steps taken in 5 minute intervals each day. The dataset can be downloaded from https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip  
 
 The variables included in this dataset are:
@@ -84,6 +86,7 @@ mean(total_by_day$totalSteps)
 ```
 ## [1] 10766.19
 ```
+Mean of total number of steps taken per day is 10,766.19
 
 4. Calculate median of total number of steps taken per day:
 
@@ -94,8 +97,7 @@ median(total_by_day$totalSteps)
 ```
 ## [1] 10765
 ```
-
-
+Median of total number of steps taken per day is 10,765
 
 
 ## What is the average daily activity pattern?
@@ -114,14 +116,14 @@ mean_by_interval<-ddply(set_wout_na, c("interval"), summarise, meanSteps = mean(
 mean_by_interval <-mutate(mean_by_interval,time_interval= strptime(sprintf("%02d:%02d", interval %/% 100,interval %% 100), format="%H:%M"))
 ```
 
-3. Make time series plot of average number of steps per time interval
+3. Make time series plot of the 5-minute interval (**time_interval** on x-axis) and the average number of steps taken averaged across all days (**meanSteps** on y-axis)
 
 ```r
 g2 <- ggplot(mean_by_interval, aes(time_interval, meanSteps))
 g2 <- g2 + geom_line(color = 'blue')
 g2 <- g2 + scale_x_datetime(breaks = date_breaks("60 min"), minor_breaks = date_breaks("30 min"), labels=date_format("%H:%M"))
 g2 <- g2 + theme(axis.text.x = element_text(angle = 90))
-g2 <- g2 + labs(title = 'Average number of steps taken per 5 min interval measured during the day',x = 'Time', y = 'Average number of steps')
+g2 <- g2 + labs(title = 'Average number of steps taken per 5-min interval measured during the day',x = 'Time', y = 'Average number of steps')
 g2
 ```
 
@@ -154,10 +156,10 @@ length(which(is.na(full_set$step)))
 ```
 Dateset has 2,304 rows with missing values.
 
-2. Create new dataset **i_full_set** with imputed values - missing steps value is replaced with rounded average number of steps for that interval across all days
+2. Create new dataset **i_full_set** with imputed values - missing steps value is replaced with average number of steps for that interval across all days
 
 ```r
-i_full_set <- ddply(full_set, .(interval), function(df) {df$steps[is.na(df$steps)] <- round(mean(df$steps, na.rm=TRUE)); return(df)})
+i_full_set <- ddply(full_set, .(interval), function(df) {df$steps[is.na(df$steps)] <- mean(df$steps, na.rm=TRUE); return(df)})
 ```
 
 3. Create new data frame *i_total_by_day* from imputed dataset using function ddply with variable **steps** summarized accros **date** values and stored as **totalSteps**:
@@ -171,7 +173,7 @@ i_total_by_day<-ddply(i_full_set, c("date"), summarise, totalSteps = sum(as.nume
 
 ```r
 g3<-ggplot(i_total_by_day, aes(x=totalSteps)) + geom_histogram(binwidth=500,color="black", fill="white")
-g3<-g3 + labs(title = 'Distribution of total steps taken per day (missing values imputed by average)',x = 'Total number of steps per day (binwidth = 500 steps)', y = 'Frequency')
+g3<-g3 + labs(title = 'Distribution of total steps taken per day (missing values replaced by average)',x = 'Total number of steps per day (binwidth = 500 steps)', y = 'Frequency')
 g3<-g3+scale_x_continuous(breaks=seq(0,30000,by=2000))
 g3
 ```
@@ -186,8 +188,9 @@ mean(i_total_by_day$totalSteps)
 ```
 
 ```
-## [1] 10765.64
+## [1] 10766.19
 ```
+Mean of total number of steps taken per day is 10,766.19 and it is the same for dataset without missing values and for dataset with imputed missing values because missing values were replaced by average (mean) number of steps per interval. 
 
 6. Calculate median of total number of steps taken per day:
 
@@ -196,10 +199,9 @@ median(i_total_by_day$totalSteps)
 ```
 
 ```
-## [1] 10762
+## [1] 10766.19
 ```
-
-Mean and median of total number of steps taken per day are slightly different between dataset with removed missing values and dataset with values replaced by average number of steps per interval. Mean is 10,766.19 for dataset without missing values and 10,765.64 for dataset with imputed missing values. Median is 10,765 for dataset without missing values and 10,762 for dataset with imputed missing values. 
+Median of total number of steps taken per day is 10,765 for dataset without missing values and 10,766.19 - the same as mean - for dataset with imputed missing values replaced by average value of steps per interval. 
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
@@ -224,15 +226,15 @@ i_mean_by_interval<-ddply(i_full_set, c("interval","dtype"), summarise, meanStep
 i_mean_by_interval <-mutate(i_mean_by_interval,time_interval= strptime(sprintf("%02d:%02d", interval %/% 100,interval %% 100), format="%H:%M"))
 ```
 
-4.  Make time series plot with panels (facets) for each day type of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). 
+4.  Make time series plot of the 5-minute interval (**time_interval** on x-axis) and the average number of steps taken averaged across alldays (**meanSteps** on y-axis) per each day type (panel/facet by **dtype**)
 
 ```r
 g4 <- ggplot(i_mean_by_interval, aes(time_interval, meanSteps))
-g4 <- g4+facet_grid(dtype~.)
-g4 <- g4 + geom_line(color = 'blue')
+g4 <- g4 + geom_line(color = 'red')
+g4 <- g4 + facet_wrap(~dtype, ncol = 1)
 g4 <- g4 + scale_x_datetime(breaks = date_breaks("60 min"), minor_breaks = date_breaks("30 min"), labels=date_format("%H:%M"))
 g4 <- g4 + theme(axis.text.x = element_text(angle = 90))
-g4 <- g4 + labs(title = 'Average number of steps taken per 5 min interval measured during the day\n on weekdays and weekends',x = 'Time', y = 'Average number of steps')
+g4 <- g4 + labs(title = 'Average number of steps taken per 5-min interval measured during the day\n on weekdays and weekends',x = 'Time', y = 'Average number of steps')
 g4
 ```
 
@@ -250,4 +252,5 @@ ddply(i_mean_by_interval, .(dtype), summarize, interval=interval[which.max(meanS
 ## 2 WEEKEND      915
 ```
 For weekdays interval with maximum number of steps is 08:30-08:35 and for weekends interval with maximum number of steps is 09:10-09:15
+
 
